@@ -1,0 +1,16 @@
+{
+  "name": "gatsby-source-mercadolibre",
+  "version": "1.0.0",
+  "description": "GatsbyJS plugin that pulls MercadoLibre data into GraphQL.",
+  "keywords": [
+    "mercadolibre",
+    "gatsby",
+    "gatsbyjs",
+    "graphql"
+  ],
+  "author": "@florantara",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.3.0"
+  }
+}
