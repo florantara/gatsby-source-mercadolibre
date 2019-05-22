@@ -14,20 +14,12 @@
 
 ## Setup
 
-#### 1 - Clone
+#### 1 - Install Package
 
 From the root of your Gatsby site:
 
-If you have a `/plugins` folder:
-
 ```bash
-cd plugins && git clone git@github.com:florantara/gatsby-source-mercadolibre.git
-```
-
-If you don't:
-
-```bash
-mkdir plugins && cd plugins && git clone git@github.com:florantara/gatsby-source-mercadolibre.git
+npm install gatsby-source-mercadolibre
 ```
 
 #### 2 - Configure the plugin in `gatsby-config.js`
@@ -107,7 +99,7 @@ exports.createPages = ({ graphql, actions }) => {
 
 #### 2 - Consume product data from the template:
 
-In `src/templates/product.js`:
+In `src/templates/product.js` use this query:
 
 ```graphql
 export const productQuery = graphql`
