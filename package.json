@@ -9,7 +9,7 @@
     "graphql",
     "gatsby-plugin"
   ],
-  "main": "index.js",
+  "main": "gatsby-node.js",
   "author": "Flor Antara <florenciaantara@gmail.com>",
   "license": "MIT",
   "repository": {
