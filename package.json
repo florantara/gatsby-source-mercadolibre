@@ -6,11 +6,20 @@
     "mercadolibre",
     "gatsby",
     "gatsbyjs",
-    "graphql"
+    "graphql",
+    "gatsby-plugin"
   ],
-  "author": "@florantara",
+  "author": "Flor Antara <florenciaantara@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "node-fetch": "^2.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/florantara/gatsby-source-mercadolibre.git"
+  },
+  "homepage": "https://github.com/florantara/gatsby-source-mercadolibre#readme",
+  "bugs": {
+    "url": "https://github.com/florantara/gatsby-source-mercadolibre/issues"
   }
 }

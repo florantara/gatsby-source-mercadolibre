@@ -171,7 +171,7 @@ allMercadoLibreProduct {
 
 Note that the `id` field is a GraphQL internal ID. The _ML_ ID is stored under `itemID`
 
-Example: `https://articulo.mercadolibre.com.ar/MLA-736407313-smart-tv-55-full-hd-samsung-un55k5500-_JM` would be:
+Example: [https://articulo.mercadolibre.com.ar/MLA-736407313-smart-tv-55-full-hd-samsung-un55k5500-\_JM](https://articulo.mercadolibre.com.ar/MLA-736407313-smart-tv-55-full-hd-samsung-un55k5500-_JM) would be queried as:
 
 ```graphql
 {
