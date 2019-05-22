@@ -68,7 +68,6 @@ exports.createPages = ({ graphql, actions }) => {
             allMercadoLibreProduct {
               edges {
                 node {
-                  title
                   id
                 }
               }
