@@ -21,7 +21,8 @@
     "url": "https://github.com/florantara/gatsby-source-mercadolibre/issues"
   },
   "dependencies": {
-    "node-fetch": "^2.3.0"
+    "node-fetch": "^2.3.0",
+    "gatsby-source-filesystem": "^2.1.3"
   },
   "peerDependencies": {
     "gatsby": ">=2.0.0",
