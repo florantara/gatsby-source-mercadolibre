@@ -5,6 +5,7 @@ const {
   importAndCreateThumbnailNode,
   getCompleteProductData,
   processProduct,
+  createStoreFiltersNode,
   getItemDescription
 } = require("./utils");
 
@@ -39,6 +40,7 @@ exports.sourceNodes = (
     .then(async response => {
       const parsedInitialResponse = await response.json();
       const totalProducts = parsedInitialResponse.paging.total;
+      const storeFilters = parsedInitialResponse.available_filters;
       const results = [...parsedInitialResponse.results]; // Initial results
       const allPages = [];
 
@@ -59,9 +61,11 @@ exports.sourceNodes = (
         );
         offset = offset + 50;
       }
-      return Promise.all(allPages).then(() => results);
+      return Promise.all(allPages).then(() => ({ results, storeFilters }));
     })
-    .then(productsReceived => {
+    .then(data => {
+      const storeFilters = data.storeFilters;
+      const productsReceived = data.results;
       if (productsReceived.length === 0) {
         console.log(
           `\n ⚠️ ️  Mercado Libre API returned 0 products. \n Check the configuration options and make sure the user has published products.`
@@ -75,7 +79,7 @@ exports.sourceNodes = (
           "\x1b[0m",
           "Importing from Mercado Libre..."
         );
-        if (productsReceived.length > 150) {
+        if (productsReceived.length > 50) {
           console.log(
             "\x1b[36m",
             "notice",
@@ -85,41 +89,60 @@ exports.sourceNodes = (
             }). This may take a while.`
           );
         }
+        if (productsReceived.length > 300) {
+          console.log(
+            "\x1b[36m",
+            "notice",
+            "\x1b[0m",
+            "Limiting to 3 images per product."
+          );
+        }
         const allProducts =
           productsReceived &&
           productsReceived.map(productData => {
-            return getCompleteProductData(productData.id).then(
-              async product => ({
+            return getCompleteProductData(productData.id)
+              .then(async product => ({
                 ...product,
                 // itemID: GraphQL overrides the id field with its own number, so we use itemID to store the ML id
-                itemID: product.id,
+                itemID: product && product.id,
                 // itemDescription: Comes from a different endpoint
                 itemDescription: await getItemDescription(productData.id).then(
-                  description => description.plain_text
+                  description => description && description.plain_text
                 ),
                 // itemImages: Process into the data layer the largest variation of each img
                 itemImages: await importAndCreateImageNodes({
-                  productID: product.id,
-                  productPictures: product.pictures,
+                  productName: product && product.title, // So we can apply a max limit
+                  totalProducts: productsReceived.length, // So we can apply a max limit
+                  productID: product && product.id,
+                  productPictures: product && product.pictures,
                   store,
                   cache,
                   createNode
                 }),
                 // itemThumbnail: Make the first image given by product.pictures be the thumbnail
                 itemThumbnail: await importAndCreateThumbnailNode({
-                  productID: product.id,
-                  thumbnail: product.pictures[0],
+                  productID: product && product.id,
+                  thumbnail: product && product.pictures[0],
                   store,
                   cache,
                   createNode
                 })
-              })
-            );
+              }))
+              .catch(error => {
+                console.log("Error getting all product data ");
+              });
           });
-        return Promise.all(allProducts).then(results => results);
+
+        return Promise.all(allProducts).then(results => ({
+          results,
+          storeFilters
+        }));
       }
     })
-    .then(allProductsProcessed => {
+    .then(data => {
+      const storeFilters = data.storeFilters;
+      const allProductsProcessed = data.results;
+      console.log("storeFilters ", storeFilters);
       console.log(
         "\x1b[36m",
         "notice",
@@ -127,6 +150,16 @@ exports.sourceNodes = (
         allProductsProcessed.length,
         " products imported. Creating nodes..."
       );
+
+      // Create Filters Node
+      const filtersNode = createStoreFiltersNode(
+        storeFilters,
+        createNodeId,
+        createContentDigest
+      );
+      createNode(filtersNode);
+
+      // Create Products Nodes
       allProductsProcessed.forEach(async product => {
         const nodeData = await processProduct(
           product,
@@ -141,5 +174,6 @@ exports.sourceNodes = (
         "\n ⚠️  There was a problem with gatsby-source-mercadolibre. Check this endpoint: ↳",
         userEndpoint
       );
+      console.log(err);
     });
 };
