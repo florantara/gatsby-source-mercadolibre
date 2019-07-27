@@ -154,6 +154,7 @@ exports.processProduct = (product, createNodeId, createContentDigest) => {
   return nodeData;
 };
 
+// Store wide available filters
 exports.createStoreFiltersNode = (data, createNodeId, createContentDigest) => {
   const nodeId = createNodeId(`ML-StoreFilters`);
   const nodeContent = JSON.stringify(data);
@@ -180,5 +181,21 @@ exports.getItemDescription = itemID => {
       console.log(
         `\n ℹ️  Product with id ${itemID} didn't provide a description from the API.`
       );
+    });
+};
+
+// Get the product's category information
+// Documentation: https://developers.mercadolibre.com.ar/en_us/categories-attributes
+exports.getCategoryData = categoryID => {
+  return fetch(`${apiHost}/categories/${categoryID}`)
+    .then(category => category.json())
+    .then(category => ({
+      category_id: category.id,
+      category_name: category.name,
+      children_categories: category.children_categories,
+      path_from_root: category.path_from_root
+    }))
+    .catch(e => {
+      return "";
     });
 };

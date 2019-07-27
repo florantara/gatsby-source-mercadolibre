@@ -6,7 +6,8 @@ const {
   getCompleteProductData,
   processProduct,
   createStoreFiltersNode,
-  getItemDescription
+  getItemDescription,
+  getCategoryData
 } = require("./utils");
 
 exports.sourceNodes = (
@@ -109,6 +110,10 @@ exports.sourceNodes = (
                 itemDescription: await getItemDescription(productData.id).then(
                   description => description && description.plain_text
                 ),
+                // itemCategory: Get the complete information about the category, not just the ID.
+                itemCategory: await getCategoryData(
+                  productData.category_id
+                ).then(category => category),
                 // itemImages: Process into the data layer the largest variation of each img
                 itemImages: await importAndCreateImageNodes({
                   productName: product && product.title, // So we can apply a max limit
@@ -139,8 +144,8 @@ exports.sourceNodes = (
         }));
       }
     })
-    .then(data => {
-      const storeFilters = data.storeFilters;
+    .then(async data => {
+      let storeFilters = data.storeFilters;
       const allProductsProcessed = data.results;
       console.log(
         "\x1b[36m",
@@ -149,6 +154,34 @@ exports.sourceNodes = (
         allProductsProcessed.length,
         " products imported. Creating nodes..."
       );
+
+      // Query the /category endpoint to get more
+      // information about the Category filter.
+      // children_categories and path_from_root
+      // in particular are important
+      async function getAllCategoriesData() {
+        let updatedCategories = [];
+        const categories = storeFilters.find(f => f.id === "category");
+        for (const category of categories.values) {
+          if (category) {
+            const categoryData = await getCategoryData(category.id);
+            if (categoryData) {
+              updatedCategories.push({ ...category, ...categoryData });
+            }
+          }
+        }
+        return updatedCategories;
+      }
+
+      // Update the category filter with the new data
+      for (const filter of storeFilters) {
+        if (filter.id === "category") {
+          const categories = await getAllCategoriesData();
+          storeFilters = storeFilters.map(f =>
+            f.id === "category" ? categories[0] : f
+          );
+        }
+      }
 
       // Create Filters Node
       const filtersNode = createStoreFiltersNode(
