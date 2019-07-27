@@ -142,7 +142,6 @@ exports.sourceNodes = (
     .then(data => {
       const storeFilters = data.storeFilters;
       const allProductsProcessed = data.results;
-      console.log("storeFilters ", storeFilters);
       console.log(
         "\x1b[36m",
         "notice",
