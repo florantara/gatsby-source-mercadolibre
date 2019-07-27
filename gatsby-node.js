@@ -178,12 +178,12 @@ exports.sourceNodes = (
         if (filter.id === "category") {
           const categories = await getAllCategoriesData();
           storeFilters = storeFilters.map(f =>
-            f.id === "category" ? categories[0] : f
+            f.id === "category" ? { ...f, values: categories } : f
           );
         }
       }
 
-      // Create Filters Node
+      // Create Filters Nodes
       const filtersNode = createStoreFiltersNode(
         storeFilters,
         createNodeId,
