@@ -190,10 +190,10 @@ exports.getCategoryData = categoryID => {
   return fetch(`${apiHost}/categories/${categoryID}`)
     .then(category => category.json())
     .then(category => ({
-      category_id: category.id,
-      category_name: category.name,
-      children_categories: category.children_categories,
-      path_from_root: category.path_from_root
+      category_id: category.id || "",
+      category_name: category.name || "",
+      children_categories: category.children_categories || [],
+      path_from_root: category.path_from_root || []
     }))
     .catch(e => {
       return "";
