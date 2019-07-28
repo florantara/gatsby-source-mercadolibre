@@ -166,15 +166,18 @@ exports.sourceNodes = (
       async function getAllCategoriesData() {
         let updatedCategories = [];
         const categories = storeFilters.find(f => f.id === "category");
-        for (const category of categories.values) {
-          if (category) {
-            const categoryData = await getCategoryData(category.id);
-            if (categoryData) {
-              updatedCategories.push({ ...category, ...categoryData });
+
+        if (categories) {
+          for (const category of categories.values) {
+            if (category) {
+              const categoryData = await getCategoryData(category.id);
+              if (categoryData) {
+                updatedCategories.push({ ...category, ...categoryData });
+              }
             }
           }
+          return updatedCategories;
         }
-        return updatedCategories;
       }
 
       // Update the category filter with the new data
@@ -185,6 +188,23 @@ exports.sourceNodes = (
             f.id === "category" ? { ...f, values: categories } : f
           );
         }
+      }
+
+      if (!storeFilters.find(f => f.id === "category")) {
+        // If there isn't a category filter
+        // store at least on 1 item
+        // the children_categories and path_from_root
+        // to prevent GraphQL from failing at null properties
+        storeFilters[0] = {
+          ...storeFilters[0],
+          values: [
+            {
+              ...storeFilters[0].values,
+              children_categories: [{ id: "", name: "" }],
+              path_from_root: [{ id: "", name: "" }]
+            }
+          ]
+        };
       }
 
       // Create Filters Nodes
