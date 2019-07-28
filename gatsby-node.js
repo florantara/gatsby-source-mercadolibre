@@ -131,7 +131,11 @@ exports.sourceNodes = (
                   store,
                   cache,
                   createNode
-                })
+                }),
+
+                // Store something for potentially null values:
+                video_id: product.video_id || "",
+                original_price: product.original_price || product.price
               }))
               .catch(error => {
                 console.log("Error getting all product data ");
