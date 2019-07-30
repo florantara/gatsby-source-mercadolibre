@@ -154,6 +154,24 @@ exports.processProduct = (product, createNodeId, createContentDigest) => {
   return nodeData;
 };
 
+// Seller data
+exports.createSellerNode = (data, createNodeId, createContentDigest) => {
+  const nodeId = createNodeId(`ML-Seller`);
+  const nodeContent = JSON.stringify(data);
+  const nodeData = {
+    id: nodeId,
+    seller: data,
+    parent: null,
+    children: [],
+    internal: {
+      type: `MercadoLibreSeller`,
+      content: nodeContent,
+      contentDigest: createContentDigest(data)
+    }
+  };
+  return nodeData;
+};
+
 // Store wide available filters
 exports.createStoreFiltersNode = (data, createNodeId, createContentDigest) => {
   const nodeId = createNodeId(`ML-StoreFilters`);

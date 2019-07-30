@@ -5,13 +5,14 @@ const {
   importAndCreateThumbnailNode,
   getCompleteProductData,
   processProduct,
+  createSellerNode,
   createStoreFiltersNode,
   getItemDescription,
   getCategoryData
 } = require("./utils");
 
 exports.sourceNodes = (
-  { actions, createNodeId, createContentDigest, store, cache },
+  { actions, createNodeId, createContentDigest, store, cache, reporter },
   configOptions
 ) => {
   const { createNode } = actions;
@@ -62,41 +63,45 @@ exports.sourceNodes = (
         );
         offset = offset + 50;
       }
-      return Promise.all(allPages).then(() => ({ results, storeFilters }));
+
+      // Bring in some info about the seller
+      let sellerInfo = {};
+      const sellerQuery = fetch(
+        `${apiHost}/users/${parsedInitialResponse.seller.id}`
+      )
+        .then(data => data.json())
+        .then(data => {
+          Object.assign(sellerInfo, data);
+        });
+
+      return Promise.all([...allPages, sellerQuery]).then(() => ({
+        results,
+        storeFilters,
+        seller: { tags: sellerInfo.tags, permalink: sellerInfo.permalink } // we don't want to import everything from the seller endpoint
+      }));
     })
     .then(data => {
       const storeFilters = data.storeFilters;
       const productsReceived = data.results;
+      const seller = data.seller;
       if (productsReceived.length === 0) {
-        console.log(
-          `\n ⚠️ ️  Mercado Libre API returned 0 products. \n Check the configuration options and make sure the user has published products.`
+        reporter.warn(
+          "Mercado Libre API returned 0 products. Check the configuration options and make sure the user has published products."
         );
       } else {
         // Grab all the product data from the https://api.mercadolibre.com/items/:id` endpoint
         // Documentation: https://api.mercadolibre.com/items/#options
-        console.log(
-          "\x1b[36m",
-          "notice",
-          "\x1b[0m",
-          "Importing from Mercado Libre..."
-        );
+
+        reporter.info("Importing from Mercado Libre...");
         if (productsReceived.length > 50) {
-          console.log(
-            "\x1b[36m",
-            "notice",
-            "\x1b[0m",
+          reporter.info(
             `Importing a lot of products (${
               productsReceived.length
             }). This may take a while.`
           );
         }
         if (productsReceived.length > 300) {
-          console.log(
-            "\x1b[36m",
-            "notice",
-            "\x1b[0m",
-            "Limiting to 3 images per product."
-          );
+          reporter.warn("Limiting to 3 images per product.");
         }
         const allProducts =
           productsReceived &&
@@ -144,19 +149,18 @@ exports.sourceNodes = (
 
         return Promise.all(allProducts).then(results => ({
           results,
-          storeFilters
+          storeFilters,
+          seller
         }));
       }
     })
     .then(async data => {
       let storeFilters = data.storeFilters;
+      let seller = data.seller;
       const allProductsProcessed = data.results;
-      console.log(
-        "\x1b[36m",
-        "notice",
-        "\x1b[0m",
-        allProductsProcessed.length,
-        " products imported. Creating nodes..."
+
+      reporter.info(
+        `${allProductsProcessed.length} products imported. Creating nodes... `
       );
 
       // Query the /category endpoint to get more
@@ -208,6 +212,14 @@ exports.sourceNodes = (
       }
 
       // Create Filters Nodes
+      const sellerNode = createSellerNode(
+        seller,
+        createNodeId,
+        createContentDigest
+      );
+      createNode(sellerNode);
+
+      // Create Filters Nodes
       const filtersNode = createStoreFiltersNode(
         storeFilters,
         createNodeId,
@@ -226,9 +238,8 @@ exports.sourceNodes = (
       });
     })
     .catch(err => {
-      console.log(
-        "\n ⚠️  There was a problem with gatsby-source-mercadolibre. Check this endpoint: ↳",
-        userEndpoint
+      reporter.warn(
+        `There was a problem with gatsby-source-mercadolibre. Check this endpoint: ↳ ${userEndpoint}`
       );
       console.log(err);
     });
