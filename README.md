@@ -22,7 +22,7 @@ From the root of your Gatsby site:
 npm install gatsby-source-mercadolibre
 ```
 
-#### 2 - Configure the plugin in `gatsby-config.js`
+<h4 id="config"> 2 - Configure the plugin in `gatsby-config.js`</h4>
 
 ```javascript
 module.exports = {
@@ -39,8 +39,8 @@ module.exports = {
 ```
 
 🕵🏼‍♀️
-Find out your `site_id` [here](https://api.mercadolibre.com/sites).
-Find the `username` by going to the user Profile.
+Find out your `site_id` [here](https://api.mercadolibre.com/sites) .
+Find the `username` by going to the user Profile under the `/perfil` url:
 
 _Example:_
 In [https://www.mercadolibre.com.ar/perfil/FRAVEGA](https://www.mercadolibre.com.ar/perfil/FRAVEGA) the `username` is `FRAVEGA`.
@@ -189,3 +189,6 @@ Example: [https://articulo.mercadolibre.com.ar/MLA-736407313-smart-tv-55-full-hd
   }
 }
 ```
+
+## Gatsby Theme
+We launched a [gatsby theme](https://github.com/florantara/gatsby-theme-mercadolibre-store) that uses this plugin.
